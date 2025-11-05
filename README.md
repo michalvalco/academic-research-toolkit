@@ -17,13 +17,16 @@ The Academic Research Toolkit is a collection of standalone Python scripts and M
 ## Features
 
 ### 🔄 Dual Architecture
+
 Each tool exists in two forms:
+
 - **Standalone CLI** - Direct command-line usage for one-off tasks
 - **MCP Server** - Programmatic access for agent orchestration
 
 ### 📄 Core Tools
 
 #### 1. PDF Processor
+
 Extracts text and metadata from academic PDFs into structured markdown.
 
 ```bash
@@ -31,12 +34,14 @@ python pdf_processor.py --input ./pdfs --output ./results
 ```
 
 **Features:**
+
 - Batch processing of PDF directories
 - Metadata extraction (title, author, date, page count)
 - Clean text extraction with formatting preservation
 - Outputs: Markdown + JSON metadata
 
 #### 2. Citation Extractor
+
 Identifies and parses citations from academic texts using regex patterns.
 
 ```bash
@@ -44,12 +49,14 @@ python citation_extractor.py --input ./extracted --output ./citations
 ```
 
 **Features:**
+
 - Multi-format support (books, articles, chapters, online sources)
 - English & Slovak language support
 - Structured JSON output with citation metadata
 - AI-powered fallback for complex formats (via `citation_extractor_ai.py`)
 
 #### 3. Theme Analyzer
+
 Analyzes themes, concepts, and term co-occurrences across research corpus.
 
 ```bash
@@ -57,6 +64,7 @@ python theme_analyzer.py --input ./extracted --output ./themes
 ```
 
 **Features:**
+
 - Keyword frequency analysis
 - Term co-occurrence mapping
 - Context extraction for key terms
@@ -64,6 +72,7 @@ python theme_analyzer.py --input ./extracted --output ./themes
 - Research gap detection
 
 #### 4. Affiliation Extractor
+
 Extracts author names and institutional affiliations from PDFs.
 
 ```bash
@@ -71,6 +80,7 @@ python affiliation_extractor.py --input ./pdfs --output ./authors
 ```
 
 **Features:**
+
 - Heuristic-based extraction (no API costs)
 - Parses affiliations into: department, institution, location
 - Email extraction and matching
@@ -85,6 +95,7 @@ python mcp_servers/research_library_agent.py --input ./pdfs --output ./results
 ```
 
 **What it does:**
+
 1. Extracts text from all PDFs (free)
 2. Extracts citations using Claude API (paid)
 3. Analyzes themes across corpus (free)
@@ -95,24 +106,28 @@ python mcp_servers/research_library_agent.py --input ./pdfs --output ./results
 ## Installation
 
 ### Prerequisites
+
 - Python 3.9 or higher
 - pip package manager
 
 ### Setup
 
 1. Clone the repository:
+
 ```bash
 git clone https://github.com/michalvalco/academic-research-toolkit.git
 cd academic-research-toolkit
 ```
 
 2. Create a virtual environment:
+
 ```bash
 python -m venv .venv
 source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 ```
 
 3. Install dependencies:
+
 ```bash
 pip install pdfplumber pypdf anthropic fastmcp
 ```
@@ -127,38 +142,43 @@ export ANTHROPIC_API_KEY='sk-ant-your-key-here'  # Linux/Mac
 $env:ANTHROPIC_API_KEY = "sk-ant-your-key-here"  # PowerShell
 ```
 
-Get your API key at: https://console.anthropic.com/
+Get your API key at: <https://console.anthropic.com/>
 
 ## Quick Start
 
 ### Process a Single PDF
+
 ```bash
 python pdf_processor.py --input ./sample.pdf --output ./output
 ```
 
 ### Extract Citations from Processed Text
+
 ```bash
 python citation_extractor.py --input ./output --output ./citations
 ```
 
 ### Analyze Themes Across Multiple Papers
+
 ```bash
 python theme_analyzer.py --input ./output --output ./themes
 ```
 
 ### Extract Author Affiliations
+
 ```bash
 python affiliation_extractor.py --input ./pdfs --output ./authors
 ```
 
 ### Process Entire Research Library (with API)
+
 ```bash
 python mcp_servers/research_library_agent.py --input ./pdfs --output ./complete_analysis
 ```
 
-## Project Structure
+## Directory Structure
 
-```
+```text
 academic-research-toolkit/
 ├── pdf_processor.py              # Extract text from PDFs
 ├── citation_extractor.py         # Parse citations (regex)
@@ -186,24 +206,28 @@ python mcp_servers/pdf_processor_mcp.py
 ```
 
 Then call via MCP client or agent. Each MCP server exposes tools like:
+
 - `process_pdf(pdf_path, output_dir)` - Process single file
 - `process_pdf_directory(input_dir, output_dir)` - Batch processing
 
 ## Use Cases
 
 **Academic Researchers:**
+
 - Process large PDF libraries quickly
 - Extract and organize citations automatically
 - Identify research themes and gaps
 - Track author networks
 
 **PhD Students:**
+
 - Literature review automation
 - Citation management
 - Theme mapping for dissertation chapters
 - Author affiliation tracking
 
 **Research Institutions:**
+
 - Corpus analysis across departments
 - Institutional publication tracking
 - Research trend identification
@@ -212,12 +236,14 @@ Then call via MCP client or agent. Each MCP server exposes tools like:
 ## Cost Breakdown
 
 **Free Components (No API):**
+
 - ✅ PDF text extraction
 - ✅ Citation extraction (regex)
 - ✅ Theme analysis
 - ✅ Affiliation extraction
 
 **AI Components (Claude API):**
+
 - 💰 AI-powered citation extraction: ~$0.01-0.03 per paper
 - 💰 Research briefing synthesis: ~$0.05 one-time
 - **Total for 50 papers:** ~$0.55-1.55
@@ -255,6 +281,7 @@ python pdf_processor.py --input ./test_data --output ./test_output
 ### Code Style
 
 This project follows pragmatic Python patterns:
+
 - Type hints for function signatures
 - Descriptive variable names
 - `pathlib.Path` for file operations
@@ -265,6 +292,7 @@ See [`.github/copilot-instructions.md`](.github/copilot-instructions.md) for com
 ## Contributing
 
 Contributions welcome! This toolkit is designed for academic research workflows. If you have ideas for:
+
 - New extraction patterns
 - Additional languages
 - Performance improvements
@@ -284,6 +312,7 @@ GitHub: [@michalvalco](https://github.com/michalvalco)
 ## Acknowledgments
 
 Built with:
+
 - [pdfplumber](https://github.com/jsvine/pdfplumber) - PDF text extraction
 - [Anthropic Claude](https://www.anthropic.com/) - AI-powered analysis
 - [FastMCP](https://github.com/jlowin/fastmcp) - MCP server framework
@@ -294,37 +323,30 @@ Built with:
 
 ---
 
-## Project Structure
-
-```
-research-tools/
-├── src/              # Source code
-├── tests/            # Test files and test data
-├── data/             # Sample/test documents
-├── output/           # Generated results
-└── README.md         # This file
-```
-
----
-
 ## Development Roadmap
 
 ### Phase 1: Standalone Tools (Current)
+
 Build each tool as independent Python script:
+
 - Works with local files
 - Takes command-line arguments
 - Outputs to files
 - Fully tested on real data
 
 ### Phase 2: MCP Server Conversion
+
 Refactor each tool as Model Context Protocol server:
+
 - Callable by Claude Agent SDK
 - Standardized input/output
 - Error handling
 - Logging and monitoring
 
 ### Phase 3: Agent Integration
+
 Build Research Assistant Agent using our MCP servers:
+
 - Combines all tools into unified workflow
 - Maintains context across operations
 - Autonomous operation
@@ -332,32 +354,4 @@ Build Research Assistant Agent using our MCP servers:
 
 ---
 
-## Usage (When Complete)
-
-```bash
-# Standalone mode
-python src/pdf_processor.py --input ./papers --output ./extracted
-
-# Agent mode (future)
-research-agent analyze --topic "AI Ethics" --papers ./papers
-```
-
----
-
-## Technical Stack
-
-- **Python 3.9+**
-- **PDF Processing:** pdfplumber, PyPDF2
-- **Text Analysis:** spaCy, NLTK
-- **Agent Framework:** claude-agent-sdk
-- **Protocol:** Model Context Protocol (MCP)
-
----
-
-## Testing Strategy
-
-Each tool is tested with actual academic papers from your research library. Success means the tool produces output you'd actually use in your work.
-
----
-
-**Last Updated:** November 4, 2025
+**Last Updated:** November 5, 2025
