@@ -86,6 +86,28 @@ python affiliation_extractor.py --input ./pdfs --output ./authors
 - Email extraction and matching
 - Multi-language support (English, Slovak)
 
+#### 5. Bibliography Generator
+
+Generates formatted bibliographies from extracted citations.
+
+```bash
+python bibliography_generator.py --input ./citations/paper_citations.json --output ./bibliography.txt --format apa
+```
+
+**Features:**
+
+- Multiple citation formats: APA, MLA, Chicago
+- Alphabetical sorting by author last name
+- Slovak character support (proper Unicode handling)
+- Smart author name formatting (First Last → Last, F.)
+- Handles books, articles, online sources, interviews
+
+**Supported Formats:**
+
+- **APA** - American Psychological Association (most complete)
+- **MLA** - Modern Language Association
+- **Chicago** - Notes-bibliography style
+
 ### 🤖 Batch Processing Agent
 
 The **Research Library Agent** orchestrates all tools to process entire PDF libraries:
@@ -171,6 +193,19 @@ python theme_analyzer.py --input ./output --output ./themes
 python affiliation_extractor.py --input ./pdfs --output ./authors
 ```
 
+### Generate Formatted Bibliography
+
+```bash
+# APA format (default)
+python bibliography_generator.py --input ./citations/paper_citations.json --output ./bibliography.txt
+
+# MLA format
+python bibliography_generator.py --input ./citations/paper_citations.json --output ./bibliography.txt --format mla
+
+# Chicago format
+python bibliography_generator.py --input ./citations/paper_citations.json --output ./bibliography.txt --format chicago
+```
+
 ### Process Entire Research Library (with API)
 
 ```bash
@@ -185,12 +220,14 @@ academic-research-toolkit/
 ├── citation_extractor.py         # Parse citations (regex)
 ├── theme_analyzer.py             # Analyze themes and concepts
 ├── affiliation_extractor.py      # Extract author affiliations
+├── bibliography_generator.py     # Generate formatted bibliographies
 ├── mcp_servers/                  # MCP server versions
 │   ├── pdf_processor_mcp.py
 │   ├── citation_extractor_mcp.py
 │   ├── citation_extractor_ai.py  # AI-powered citation extraction
 │   ├── theme_analyzer_mcp.py
 │   ├── affiliation_extractor_mcp.py
+│   ├── bibliography_generator_mcp.py
 │   ├── research_library_agent.py # Batch processor orchestrator
 │   └── research_agent.py         # Demo agent workflow
 ├── .github/
@@ -210,6 +247,9 @@ Then call via MCP client or agent. Each MCP server exposes tools like:
 
 - `process_pdf(pdf_path, output_dir)` - Process single file
 - `process_pdf_directory(input_dir, output_dir)` - Batch processing
+- `extract_citations(markdown_file, output_dir)` - Extract citations
+- `extract_authors(pdf_path, output_dir)` - Extract affiliations
+- `generate_bibliography(citations_file, output_file, format)` - Generate bibliography
 
 ## Use Cases
 
