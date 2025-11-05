@@ -5,6 +5,8 @@
 [![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
+🌐 **[View Landing Page](https://michalvalco.github.io/academic-research-toolkit/)** | 📖 **[Documentation](#quick-start)** | 💻 **[GitHub Repository](https://github.com/michalvalco/academic-research-toolkit)**
+
 ---
 
 ## Overview
