@@ -201,7 +201,7 @@ class CitationExtractor:
         return None
     
     def _build_citation(self, line: str, ctype: str, match: re.Match, 
-                       section: Optional[str]) -> Citation:
+                       section: Optional[str]) -> Optional[Citation]:
         """Build a Citation object from regex match."""
         
         if ctype == 'book':
