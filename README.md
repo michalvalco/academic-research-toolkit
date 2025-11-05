@@ -123,7 +123,8 @@ cd academic-research-toolkit
 
 ```bash
 python -m venv .venv
-source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+.venv\Scripts\activate  # On Windows
+source .venv/bin/activate  # On Linux/Mac
 ```
 
 3. Install dependencies:

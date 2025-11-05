@@ -4,7 +4,7 @@
 
 **Name:** `academic-research-toolkit`  
 **Owner:** `michalvalco`  
-**URL:** https://github.com/michalvalco/academic-research-toolkit
+**URL:** <https://github.com/michalvalco/academic-research-toolkit>
 
 ## Steps to Complete Setup
 
@@ -19,7 +19,7 @@
 
 #### Step 1: Create Repository on GitHub
 
-1. Go to: **https://github.com/new**
+1. Go to: <https://github.com/new>
 2. Configure:
    - Repository name: **`academic-research-toolkit`**
    - Description: **`A suite of Python tools for processing, analyzing, and extracting insights from academic research papers`**
@@ -50,6 +50,7 @@ git push -u origin main
 ```
 
 You may be prompted to authenticate with GitHub. Options:
+
 - **GitHub Personal Access Token** (recommended)
 - **SSH key**
 - **GitHub Desktop**
@@ -57,9 +58,10 @@ You may be prompted to authenticate with GitHub. Options:
 #### Step 3: Verify Upload
 
 After pushing, visit:
-https://github.com/michalvalco/academic-research-toolkit
+<https://github.com/michalvalco/academic-research-toolkit>
 
 You should see:
+
 - ✅ All 28 files
 - ✅ Comprehensive README with badges and documentation
 - ✅ `.github/copilot-instructions.md` for AI agent development
@@ -69,7 +71,7 @@ You should see:
 
 On GitHub, add these topics to make your repo more discoverable:
 
-```
+```text
 academic-research
 pdf-processing
 citation-extraction
@@ -99,36 +101,40 @@ To work on this repo from another computer:
 git clone https://github.com/michalvalco/academic-research-toolkit.git
 cd academic-research-toolkit
 python -m venv .venv
-source .venv/bin/activate  # Windows: .venv\Scripts\activate
+.venv\Scripts\activate  # Windows
+source .venv/bin/activate  # Linux/Mac
 pip install pdfplumber pypdf anthropic fastmcp
 ```
 
 ## Troubleshooting
 
-### If push fails due to authentication:
+### If push fails due to authentication
 
-**Option 1: Personal Access Token (PAT)**
-1. Go to: https://github.com/settings/tokens
+#### Option 1: Personal Access Token (PAT)
+
+1. Go to: <https://github.com/settings/tokens>
 2. Click "Generate new token (classic)"
 3. Select scopes: `repo` (all), `workflow`
 4. Generate and copy the token
 5. When prompted for password, use the PAT instead
 
-**Option 2: GitHub CLI**
+#### Option 2: GitHub CLI
+
 ```powershell
 # Install GitHub CLI from https://cli.github.com/
 gh auth login
 # Follow the prompts
 ```
 
-**Option 3: SSH Key**
+#### Option 3: SSH Key
+
 ```powershell
 # Generate SSH key
 ssh-keygen -t ed25519 -C "your_email@example.com"
 # Add to GitHub: https://github.com/settings/keys
 ```
 
-### If remote already exists:
+### If remote already exists
 
 ```bash
 # Check current remotes
@@ -143,4 +149,4 @@ git remote add origin https://github.com/michalvalco/academic-research-toolkit.g
 
 ---
 
-**Ready?** Go to https://github.com/new and create your repository now! 🚀
+**Ready?** Go to <https://github.com/new> and create your repository now! 🚀
