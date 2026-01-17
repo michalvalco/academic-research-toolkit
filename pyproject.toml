@@ -48,12 +48,20 @@ ai = [
 mcp = [
     "fastmcp>=0.1.0",
 ]
+api = [
+    "fastapi>=0.100.0",
+    "uvicorn>=0.22.0",
+    "python-multipart>=0.0.6",
+]
+enrichment = [
+    "httpx>=0.24.0",
+]
 dev = [
     "pytest>=7.0.0",
     "pytest-cov>=4.0.0",
 ]
 all = [
-    "academic-research-toolkit[ai,mcp,dev]",
+    "academic-research-toolkit[ai,mcp,api,enrichment,dev]",
 ]
 
 [project.scripts]

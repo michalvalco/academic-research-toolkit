@@ -1,0 +1,36 @@
+{
+  "citations": [
+    {
+      "raw_text": "Smith, J. (2020). Introduction to AI. Academic Press.",
+      "citation_type": "book",
+      "authors": ["Smith, John"],
+      "year": "2020",
+      "title": "Introduction to AI",
+      "publisher": "Academic Press",
+      "location": "New York",
+      "confidence": 0.9
+    },
+    {
+      "raw_text": "Johnson, R. (2021). Machine Learning in Healthcare. Journal of AI Research, 15(3), 100-120.",
+      "citation_type": "article",
+      "authors": ["Johnson, Robert"],
+      "year": "2021",
+      "title": "Machine Learning in Healthcare",
+      "source": "Journal of AI Research",
+      "volume": "15",
+      "issue": "3",
+      "pages": "100-120",
+      "confidence": 0.85
+    },
+    {
+      "raw_text": "Doe, J. & Smith, A. (2019). Deep Learning Fundamentals. MIT Press.",
+      "citation_type": "book",
+      "authors": ["Doe, Jane", "Smith, Alice"],
+      "year": "2019",
+      "title": "Deep Learning Fundamentals",
+      "publisher": "MIT Press",
+      "location": "Cambridge, MA",
+      "confidence": 0.9
+    }
+  ]
+}

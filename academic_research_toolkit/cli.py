@@ -12,6 +12,8 @@ Commands:
     theme    Analyze themes in academic texts
     affil    Extract author affiliations from PDFs
     biblio   Generate formatted bibliographies
+    export   Export citations to BibTeX or RIS formats
+    enrich   Enrich citations via CrossRef API
     process  Run full pipeline on a directory
 """
 
@@ -223,6 +225,99 @@ def cmd_biblio(args):
     return 0
 
 
+def cmd_export(args):
+    """Handle citation export command."""
+    input_path = Path(args.input)
+
+    if not input_path.exists():
+        print(f"Error: Input file not found: {input_path}")
+        return 1
+
+    if input_path.suffix.lower() != ".json":
+        print(f"Error: Input must be a JSON file with citation data")
+        return 1
+
+    export_format = args.format.lower()
+
+    if export_format == "bibtex":
+        from academic_research_toolkit.exporters.bibtex import BibTeXExporter
+
+        exporter = BibTeXExporter()
+        citations = exporter.load_citations(input_path)
+
+        if not citations:
+            print("No citations found in input file")
+            return 1
+
+        output_path = exporter.save(citations, Path(args.output))
+        print(f"\nBibTeX Export Complete")
+        print(f"  Citations: {len(citations)}")
+        print(f"  Output: {output_path}")
+
+    elif export_format == "ris":
+        from academic_research_toolkit.exporters.ris import RISExporter
+
+        exporter = RISExporter()
+        citations = exporter.load_citations(input_path)
+
+        if not citations:
+            print("No citations found in input file")
+            return 1
+
+        output_path = exporter.save(citations, Path(args.output))
+        print(f"\nRIS Export Complete")
+        print(f"  Citations: {len(citations)}")
+        print(f"  Output: {output_path}")
+
+    else:
+        print(f"Error: Unknown export format: {export_format}")
+        return 1
+
+    return 0
+
+
+def cmd_enrich(args):
+    """Handle citation enrichment command."""
+    from academic_research_toolkit.enrichment.crossref import CrossRefEnricher
+
+    input_path = Path(args.input)
+
+    if not input_path.exists():
+        print(f"Error: Input file not found: {input_path}")
+        return 1
+
+    if input_path.suffix.lower() != ".json":
+        print(f"Error: Input must be a JSON file with citation data")
+        return 1
+
+    enricher = CrossRefEnricher(email=args.email if hasattr(args, "email") else None)
+    citations = enricher.load_citations(input_path)
+
+    if not citations:
+        print("No citations found in input file")
+        return 1
+
+    print(f"\nEnriching {len(citations)} citations via CrossRef...")
+
+    enriched = enricher.enrich_citations(citations)
+    enriched_count = sum(1 for c in enriched if c.get("enriched"))
+
+    # Determine output path
+    if args.output:
+        output_path = Path(args.output)
+    else:
+        output_path = input_path.with_stem(input_path.stem + "_enriched")
+
+    enricher.save_enriched(citations, output_path)
+
+    print(f"\nCitation Enrichment Complete")
+    print(f"  Total: {len(citations)}")
+    print(f"  Enriched: {enriched_count}")
+    print(f"  Output: {output_path}")
+
+    return 0
+
+
 def cmd_process(args):
     """Handle full pipeline processing command."""
     from academic_research_toolkit.pdf_processor import PDFProcessor
@@ -338,6 +433,9 @@ Examples:
   research-toolkit theme -i ./extracted -o ./analysis
   research-toolkit affil -i ./papers -o ./authors
   research-toolkit biblio -i ./citations/paper_citations.json -o ./bib.md -f apa
+  research-toolkit export bibtex -i citations.json -o refs.bib
+  research-toolkit export ris -i citations.json -o refs.ris
+  research-toolkit enrich -i citations.json -o enriched.json
   research-toolkit process -i ./papers -o ./results
         """,
     )
@@ -396,6 +494,29 @@ Examples:
         help="Citation format (default: apa)",
     )
 
+    # Export command
+    export_parser = subparsers.add_parser(
+        "export",
+        help="Export citations to BibTeX or RIS format",
+    )
+    export_parser.add_argument("--input", "-i", required=True, help="Citations JSON file")
+    export_parser.add_argument("--output", "-o", required=True, help="Output file path (.bib or .ris)")
+    export_parser.add_argument(
+        "--format", "-f",
+        required=True,
+        choices=["bibtex", "ris"],
+        help="Export format (bibtex or ris)",
+    )
+
+    # Enrich command
+    enrich_parser = subparsers.add_parser(
+        "enrich",
+        help="Enrich citations via CrossRef API",
+    )
+    enrich_parser.add_argument("--input", "-i", required=True, help="Citations JSON file")
+    enrich_parser.add_argument("--output", "-o", help="Output file path (default: input_enriched.json)")
+    enrich_parser.add_argument("--email", "-e", help="Email for CrossRef polite pool (recommended)")
+
     # Process command (full pipeline)
     process_parser = subparsers.add_parser(
         "process",
@@ -417,6 +538,8 @@ Examples:
             "theme": cmd_theme,
             "affil": cmd_affil,
             "biblio": cmd_biblio,
+            "export": cmd_export,
+            "enrich": cmd_enrich,
             "process": cmd_process,
         }
 
