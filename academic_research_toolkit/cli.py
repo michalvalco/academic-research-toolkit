@@ -337,8 +337,13 @@ def cmd_graph(args):
         return 1
 
     # Load input data
-    with open(input_path, "r", encoding="utf-8") as f:
-        data = json.load(f)
+    try:
+        with open(input_path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+    except json.JSONDecodeError as e:
+        print(f"Error: Invalid JSON file format: {input_path}")
+        print(f"  Details: {e}")
+        return 1
 
     # Handle both list format and dict format
     if isinstance(data, dict) and "citations" in data:
@@ -412,8 +417,13 @@ def cmd_dashboard(args):
         return 1
 
     # Load input data
-    with open(input_path, "r", encoding="utf-8") as f:
-        data = json.load(f)
+    try:
+        with open(input_path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+    except json.JSONDecodeError as e:
+        print(f"Error: Invalid JSON file format: {input_path}")
+        print(f"  Details: {e}")
+        return 1
 
     # Handle both list format and dict format
     if isinstance(data, dict) and "citations" in data:

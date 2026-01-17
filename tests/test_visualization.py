@@ -1,15 +1,11 @@
 """Tests for the visualization module."""
 
 import json
-import tempfile
-from pathlib import Path
 
 import pytest
 
 from academic_research_toolkit.visualization.knowledge_graph import (
-    Entity,
     KnowledgeGraphBuilder,
-    Relationship,
 )
 from academic_research_toolkit.visualization.citation_network import (
     CitationNetworkBuilder,
@@ -166,6 +162,61 @@ class TestKnowledgeGraphBuilder:
         assert len(builder.entities) == 0
         assert len(builder.relationships) == 0
 
+    def test_build_from_themes(self):
+        """Test building knowledge graph from theme analysis data."""
+        builder = KnowledgeGraphBuilder()
+        theme_data = {
+            "dominant_themes": [
+                {"term": "machine learning", "frequency": 10},
+                {"term": "deep learning", "frequency": 8},
+            ],
+            "cooccurrences": {
+                "machine learning": {"deep learning": 5},
+            },
+        }
+
+        builder.build_from_themes(theme_data)
+
+        # Should have concept entities
+        concept_count = sum(
+            1 for e in builder.entities.values() if e.entity_type == "concept"
+        )
+        assert concept_count >= 2
+
+    def test_build_from_themes_empty(self):
+        """Test building from themes with empty/malformed data."""
+        builder = KnowledgeGraphBuilder()
+
+        # Empty data
+        builder.build_from_themes({})
+        assert len(builder.entities) == 0
+
+        # Missing keys
+        builder.build_from_themes({"dominant_themes": []})
+        assert len(builder.entities) == 0
+
+    def test_build_from_affiliations(self):
+        """Test building knowledge graph from author affiliation data."""
+        builder = KnowledgeGraphBuilder()
+        authors = [
+            {"name": "John Smith", "institution": "MIT"},
+            {"name": "Jane Doe", "affiliation": "Stanford University"},
+            {"name": "Bob Wilson"},  # No affiliation
+        ]
+
+        builder.build_from_affiliations(authors)
+
+        # Should have author and institution entities
+        author_count = sum(
+            1 for e in builder.entities.values() if e.entity_type == "author"
+        )
+        institution_count = sum(
+            1 for e in builder.entities.values() if e.entity_type == "institution"
+        )
+
+        assert author_count >= 2  # Two authors with affiliations
+        assert institution_count >= 2  # MIT and Stanford
+
 
 class TestCitationNetworkBuilder:
     """Tests for CitationNetworkBuilder."""
@@ -192,7 +243,7 @@ class TestCitationNetworkBuilder:
     def test_add_citation(self):
         """Test adding a citation."""
         builder = CitationNetworkBuilder()
-        edge = builder.add_citation(
+        builder.add_citation(
             citing_title="Paper A",
             cited_title="Paper B",
             cited_authors=["Smith"],
@@ -272,6 +323,42 @@ class TestCitationNetworkBuilder:
 
         assert collab["total_authors"] == 3
         assert collab["total_collaborations"] >= 1
+
+    def test_build_from_multiple_papers(self, sample_citations):
+        """Test building network from multiple papers and their citations."""
+        builder = CitationNetworkBuilder()
+        papers_citations = {
+            "Paper A": sample_citations[:2],
+            "Paper B": sample_citations[1:],
+        }
+
+        builder.build_from_multiple_papers(papers_citations)
+
+        # Should have multiple source papers and cited papers
+        assert len(builder.nodes) > 2
+        assert len(builder.edges) > 0
+
+    def test_get_citation_chain(self):
+        """Test getting citation chain traversal."""
+        builder = CitationNetworkBuilder()
+        # Create a chain: A cites B, B cites C
+        builder.add_citation("Paper A", "Paper B")
+        builder.add_citation("Paper B", "Paper C")
+        builder.add_citation("Paper D", "Paper B")  # Another paper cites B
+
+        chain = builder.get_citation_chain("Paper B", depth=2)
+
+        # Should have the starting paper at level 0
+        assert "level_0" in chain
+        assert "Paper B" in chain["level_0"]
+
+    def test_get_citation_chain_empty(self):
+        """Test citation chain for non-existent paper."""
+        builder = CitationNetworkBuilder()
+        builder.add_citation("Paper A", "Paper B")
+
+        chain = builder.get_citation_chain("Non-existent Paper")
+        assert chain == {}
 
 
 class TestGraphExporter:
