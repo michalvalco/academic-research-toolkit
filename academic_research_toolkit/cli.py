@@ -7,14 +7,16 @@ Usage:
     research-toolkit <command> [options]
 
 Commands:
-    pdf      Extract text and metadata from PDFs
-    cite     Extract citations from markdown files
-    theme    Analyze themes in academic texts
-    affil    Extract author affiliations from PDFs
-    biblio   Generate formatted bibliographies
-    export   Export citations to BibTeX or RIS formats
-    enrich   Enrich citations via CrossRef API
-    process  Run full pipeline on a directory
+    pdf       Extract text and metadata from PDFs
+    cite      Extract citations from markdown files
+    theme     Analyze themes in academic texts
+    affil     Extract author affiliations from PDFs
+    biblio    Generate formatted bibliographies
+    export    Export citations to BibTeX or RIS formats
+    enrich    Enrich citations via CrossRef API
+    graph     Build knowledge graph or citation network
+    dashboard Generate interactive visualization dashboard
+    process   Run full pipeline on a directory
 """
 
 import argparse
@@ -318,6 +320,161 @@ def cmd_enrich(args):
     return 0
 
 
+def cmd_graph(args):
+    """Handle knowledge graph and citation network commands."""
+    import json
+
+    input_path = Path(args.input)
+
+    if not input_path.exists():
+        print(f"Error: Input file not found: {input_path}")
+        return 1
+
+    if input_path.suffix.lower() != ".json":
+        print(f"Error: Input must be a JSON file")
+        return 1
+
+    # Load input data
+    with open(input_path, "r", encoding="utf-8") as f:
+        data = json.load(f)
+
+    # Handle both list format and dict format
+    if isinstance(data, dict) and "citations" in data:
+        citations = data["citations"]
+    elif isinstance(data, list):
+        citations = data
+    else:
+        citations = []
+
+    graph_type = args.type.lower()
+
+    if graph_type == "knowledge":
+        from academic_research_toolkit.visualization.knowledge_graph import KnowledgeGraphBuilder
+
+        builder = KnowledgeGraphBuilder()
+        builder.build_from_citations(citations)
+        graph_data = builder.to_dict()
+        stats = builder.get_statistics()
+
+        print(f"\nKnowledge Graph Built")
+        print(f"  Entities: {stats['total_entities']}")
+        print(f"  Relationships: {stats['total_relationships']}")
+
+    elif graph_type == "citation":
+        from academic_research_toolkit.visualization.citation_network import CitationNetworkBuilder
+
+        builder = CitationNetworkBuilder()
+        source_paper = args.source or "Source Document"
+        builder.build_from_citations(source_paper, citations)
+        graph_data = builder.to_dict()
+        metrics = builder.calculate_metrics()
+
+        print(f"\nCitation Network Built")
+        print(f"  Papers: {metrics['node_count']}")
+        print(f"  Citations: {metrics['edge_count']}")
+
+    else:
+        print(f"Error: Unknown graph type: {graph_type}")
+        return 1
+
+    # Export graph
+    from academic_research_toolkit.visualization.exporters import GraphExporter
+
+    exporter = GraphExporter()
+    export_format = args.format.lower()
+
+    output_path = Path(args.output)
+    if graph_type == "knowledge":
+        exporter.export_from_knowledge_graph(graph_data, export_format, output_path)
+    else:
+        exporter.export_from_citation_network(graph_data, export_format, output_path)
+
+    print(f"  Format: {export_format.upper()}")
+    print(f"  Output: {output_path}")
+
+    return 0
+
+
+def cmd_dashboard(args):
+    """Handle dashboard generation command."""
+    import json
+
+    input_path = Path(args.input)
+
+    if not input_path.exists():
+        print(f"Error: Input file not found: {input_path}")
+        return 1
+
+    if input_path.suffix.lower() != ".json":
+        print(f"Error: Input must be a JSON file")
+        return 1
+
+    # Load input data
+    with open(input_path, "r", encoding="utf-8") as f:
+        data = json.load(f)
+
+    # Handle both list format and dict format
+    if isinstance(data, dict) and "citations" in data:
+        citations = data["citations"]
+    elif isinstance(data, list):
+        citations = data
+    else:
+        citations = []
+
+    from academic_research_toolkit.visualization.dashboard import DashboardGenerator
+    from academic_research_toolkit.visualization.citation_network import CitationNetworkBuilder
+
+    dashboard_type = args.type.lower()
+
+    generator = DashboardGenerator(title=args.title or "Academic Research Dashboard")
+
+    if dashboard_type == "citation":
+        builder = CitationNetworkBuilder()
+        source_paper = args.source or "Source Document"
+        builder.build_from_citations(source_paper, citations)
+        network_data = builder.to_dict()
+        generator.build_citation_network_dashboard(network_data)
+
+    elif dashboard_type == "knowledge":
+        from academic_research_toolkit.visualization.knowledge_graph import KnowledgeGraphBuilder
+
+        builder = KnowledgeGraphBuilder()
+        builder.build_from_citations(citations)
+        graph_data = builder.to_dict()
+        generator.build_knowledge_graph_dashboard(graph_data)
+
+    elif dashboard_type == "theme":
+        from academic_research_toolkit.theme_analyzer import ThemeAnalyzer
+
+        # If we have raw text, analyze it
+        if args.text_input:
+            text_path = Path(args.text_input)
+            if text_path.exists():
+                analyzer = ThemeAnalyzer()
+                if text_path.is_file():
+                    analyzer.analyze_file(text_path)
+                else:
+                    analyzer.analyze_directory(text_path)
+                theme_data = analyzer.generate_insights()
+                generator.build_theme_dashboard(theme_data)
+        else:
+            # Create basic theme visualization from citation data
+            generator.build_theme_dashboard({"dominant_themes": []})
+
+    else:
+        print(f"Error: Unknown dashboard type: {dashboard_type}")
+        return 1
+
+    output_path = Path(args.output)
+    generator.generate_html(output_path)
+
+    print(f"\nDashboard Generated")
+    print(f"  Type: {dashboard_type}")
+    print(f"  Output: {output_path}")
+
+    return 0
+
+
 def cmd_process(args):
     """Handle full pipeline processing command."""
     from academic_research_toolkit.pdf_processor import PDFProcessor
@@ -433,9 +590,10 @@ Examples:
   research-toolkit theme -i ./extracted -o ./analysis
   research-toolkit affil -i ./papers -o ./authors
   research-toolkit biblio -i ./citations/paper_citations.json -o ./bib.md -f apa
-  research-toolkit export bibtex -i citations.json -o refs.bib
-  research-toolkit export ris -i citations.json -o refs.ris
+  research-toolkit export -i citations.json -o refs.bib -f bibtex
   research-toolkit enrich -i citations.json -o enriched.json
+  research-toolkit graph -i citations.json -o network.json -t citation
+  research-toolkit dashboard -i citations.json -o dashboard.html -t citation
   research-toolkit process -i ./papers -o ./results
         """,
     )
@@ -517,6 +675,44 @@ Examples:
     enrich_parser.add_argument("--output", "-o", help="Output file path (default: input_enriched.json)")
     enrich_parser.add_argument("--email", "-e", help="Email for CrossRef polite pool (recommended)")
 
+    # Graph command
+    graph_parser = subparsers.add_parser(
+        "graph",
+        help="Build knowledge graph or citation network",
+    )
+    graph_parser.add_argument("--input", "-i", required=True, help="Citations JSON file")
+    graph_parser.add_argument("--output", "-o", required=True, help="Output file path")
+    graph_parser.add_argument(
+        "--type", "-t",
+        default="citation",
+        choices=["knowledge", "citation"],
+        help="Graph type (default: citation)",
+    )
+    graph_parser.add_argument(
+        "--format", "-f",
+        default="json",
+        choices=["json", "graphml", "gexf", "dot", "cytoscape"],
+        help="Export format (default: json)",
+    )
+    graph_parser.add_argument("--source", "-s", help="Source paper title (for citation networks)")
+
+    # Dashboard command
+    dashboard_parser = subparsers.add_parser(
+        "dashboard",
+        help="Generate interactive visualization dashboard",
+    )
+    dashboard_parser.add_argument("--input", "-i", required=True, help="Citations JSON file")
+    dashboard_parser.add_argument("--output", "-o", required=True, help="Output HTML file")
+    dashboard_parser.add_argument(
+        "--type", "-t",
+        default="citation",
+        choices=["citation", "knowledge", "theme"],
+        help="Dashboard type (default: citation)",
+    )
+    dashboard_parser.add_argument("--title", help="Dashboard title")
+    dashboard_parser.add_argument("--source", "-s", help="Source paper title")
+    dashboard_parser.add_argument("--text-input", help="Text/markdown file for theme analysis")
+
     # Process command (full pipeline)
     process_parser = subparsers.add_parser(
         "process",
@@ -540,6 +736,8 @@ Examples:
             "biblio": cmd_biblio,
             "export": cmd_export,
             "enrich": cmd_enrich,
+            "graph": cmd_graph,
+            "dashboard": cmd_dashboard,
             "process": cmd_process,
         }
 

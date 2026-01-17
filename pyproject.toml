@@ -56,12 +56,16 @@ api = [
 enrichment = [
     "httpx>=0.24.0",
 ]
+visualization = [
+    "plotly>=5.0.0",
+    "networkx>=3.0.0",
+]
 dev = [
     "pytest>=7.0.0",
     "pytest-cov>=4.0.0",
 ]
 all = [
-    "academic-research-toolkit[ai,mcp,api,enrichment,dev]",
+    "academic-research-toolkit[ai,mcp,api,enrichment,visualization,dev]",
 ]
 
 [project.scripts]
