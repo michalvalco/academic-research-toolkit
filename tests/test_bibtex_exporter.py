@@ -1,7 +1,6 @@
 """Tests for the BibTeX exporter."""
 
 import json
-import tempfile
 from pathlib import Path
 
 import pytest

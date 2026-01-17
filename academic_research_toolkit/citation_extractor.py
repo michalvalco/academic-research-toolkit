@@ -12,7 +12,6 @@ from typing import Dict, List, Optional
 from dataclasses import dataclass, asdict
 
 from academic_research_toolkit.utils.exceptions import CitationExtractionError
-from academic_research_toolkit.utils.validation import validate_output_dir
 
 
 @dataclass

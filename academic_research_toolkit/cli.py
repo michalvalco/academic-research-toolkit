@@ -310,10 +310,12 @@ def cmd_enrich(args):
     else:
         output_path = input_path.with_stem(input_path.stem + "_enriched")
 
-    enricher.save_enriched(citations, output_path)
+    # Save the already-enriched citations directly (don't use save_enriched which re-enriches)
+    with output_path.open("w", encoding="utf-8") as f:
+        json.dump(enriched, f, indent=2, ensure_ascii=False)
 
     print(f"\nCitation Enrichment Complete")
-    print(f"  Total: {len(citations)}")
+    print(f"  Total: {len(enriched)}")
     print(f"  Enriched: {enriched_count}")
     print(f"  Output: {output_path}")
 

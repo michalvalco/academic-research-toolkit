@@ -7,7 +7,6 @@ from fastapi import APIRouter, HTTPException
 from academic_research_toolkit.api.models import (
     BibliographyRequest,
     BibliographyResponse,
-    CitationFormat,
     ExportFormat,
     ExportRequest,
     ExportResponse,
