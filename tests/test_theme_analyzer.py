@@ -1,6 +1,5 @@
 """Tests for theme analyzer."""
 
-import pytest
 from pathlib import Path
 
 from academic_research_toolkit.theme_analyzer import ThemeAnalyzer

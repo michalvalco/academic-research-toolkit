@@ -1,8 +1,5 @@
 """Tests for the FastAPI REST API."""
 
-import json
-import tempfile
-from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -10,7 +7,7 @@ import pytest
 # Check if FastAPI is available
 try:
     from fastapi.testclient import TestClient
-    from academic_research_toolkit.api.main import app, _jobs
+    from academic_research_toolkit.api.main import app
 
     FASTAPI_AVAILABLE = True
 except ImportError:
