@@ -280,6 +280,8 @@ def cmd_export(args):
 
 def cmd_enrich(args):
     """Handle citation enrichment command."""
+    import json
+
     from academic_research_toolkit.enrichment.crossref import CrossRefEnricher
 
     input_path = Path(args.input)
