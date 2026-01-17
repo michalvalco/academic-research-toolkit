@@ -4,7 +4,6 @@ Creates interactive HTML dashboards for exploring research data.
 Uses Plotly for visualizations with fallback to basic HTML if not available.
 """
 
-import json
 import math
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
@@ -12,7 +11,6 @@ from typing import Any, Dict, List, Optional, Tuple
 # Try to import plotly, provide fallback if not available
 try:
     import plotly.graph_objects as go
-    from plotly.subplots import make_subplots
 
     PLOTLY_AVAILABLE = True
 except ImportError:
@@ -62,9 +60,7 @@ class DashboardGenerator:
 
     def _check_plotly(self) -> bool:
         """Check if Plotly is available."""
-        if not PLOTLY_AVAILABLE:
-            return False
-        return True
+        return PLOTLY_AVAILABLE
 
     def create_network_graph(
         self,
@@ -347,6 +343,7 @@ class DashboardGenerator:
                 pos = nx.spring_layout(G, k=2, iterations=50)
                 positions = {node_id: (float(x), float(y)) for node_id, (x, y) in pos.items()}
             except Exception:
+                # Spring layout may fail for problematic graphs; fall back to circular layout
                 pass
 
         # Fallback to circular layout
@@ -527,7 +524,6 @@ class DashboardGenerator:
 
         for fig_data in self.figures:
             fig = fig_data.get("figure")
-            title = fig_data.get("title", "Chart")
             if fig:
                 fig_html = to_html(fig, include_plotlyjs="cdn", full_html=False)
                 html_parts.append(f'<div class="chart-container">')

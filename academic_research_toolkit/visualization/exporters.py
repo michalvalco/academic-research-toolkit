@@ -17,10 +17,6 @@ class GraphExporter:
     tools like Gephi, Cytoscape, and GraphViz.
     """
 
-    def __init__(self):
-        """Initialize the graph exporter."""
-        pass
-
     def export_graphml(
         self,
         nodes: List[Dict],
@@ -119,6 +115,7 @@ class GraphExporter:
             parsed = minidom.parseString(xml_string)
             xml_string = parsed.toprettyxml(indent="  ")
         except Exception:
+            # Pretty-printing is optional; if it fails, use the unformatted XML
             pass
 
         if output_path:
@@ -237,6 +234,7 @@ class GraphExporter:
             parsed = minidom.parseString(xml_string)
             xml_string = parsed.toprettyxml(indent="  ")
         except Exception:
+            # Pretty-printing is optional; if it fails, use the unformatted XML
             pass
 
         if output_path:

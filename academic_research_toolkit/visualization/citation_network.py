@@ -5,7 +5,7 @@ Builds and analyzes citation networks showing how papers reference each other.
 
 from collections import defaultdict
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional, Set, Tuple
+from typing import Any, Dict, List, Optional, Set
 
 
 @dataclass
@@ -153,7 +153,7 @@ class CitationNetworkBuilder:
         Returns:
             Self for method chaining
         """
-        source_node = self.add_paper(source_paper)
+        self.add_paper(source_paper)
 
         for citation in citations:
             cited_title = citation.get("title") or citation.get("raw_text", "Unknown")
