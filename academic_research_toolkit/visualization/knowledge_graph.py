@@ -7,7 +7,7 @@ a knowledge graph representing concepts, authors, and their connections.
 import re
 from collections import defaultdict
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional, Set, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 
 @dataclass
