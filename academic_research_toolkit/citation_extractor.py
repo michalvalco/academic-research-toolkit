@@ -231,7 +231,7 @@ class CitationExtractor:
                 publisher=None,
                 location=None,
                 url=None,
-                notes=f"{section} | Vol {match.group(5)} ({match.group(6)}): {match.group(7)}",
+                notes=f"{section} | Vol {match.group(5)} ({match.group(6)}): {match.group(7)}" if section else f"Vol {match.group(5)} ({match.group(6)}): {match.group(7)}",
                 confidence=0.9,
             )
 
@@ -246,7 +246,7 @@ class CitationExtractor:
                 publisher=None,
                 source=f"Interviewed by {match.group(3)}",
                 url=None,
-                notes=f"{section} | {match.group(5)}",
+                notes=f"{section} | {match.group(5)}" if section else match.group(5),
                 confidence=0.85,
             )
 

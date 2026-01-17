@@ -31,6 +31,15 @@ def __getattr__(name):
     elif name == "BibliographyGenerator":
         from academic_research_toolkit.bibliography_generator import BibliographyGenerator
         return BibliographyGenerator
+    elif name == "BibTeXExporter":
+        from academic_research_toolkit.exporters.bibtex import BibTeXExporter
+        return BibTeXExporter
+    elif name == "RISExporter":
+        from academic_research_toolkit.exporters.ris import RISExporter
+        return RISExporter
+    elif name == "CrossRefEnricher":
+        from academic_research_toolkit.enrichment.crossref import CrossRefEnricher
+        return CrossRefEnricher
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 
 
@@ -42,5 +51,8 @@ __all__ = [
     "AffiliationExtractor",
     "Author",
     "BibliographyGenerator",
+    "BibTeXExporter",
+    "RISExporter",
+    "CrossRefEnricher",
     "__version__",
 ]

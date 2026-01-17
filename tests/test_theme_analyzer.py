@@ -170,7 +170,8 @@ class TestThemeAnalyzerCooccurrence:
         # "machine" and "learning" should co-occur
         if "machine" in analyzer.cooccurrences:
             related = analyzer.cooccurrences["machine"]
-            assert len(related) >= 0  # May have cooccurrences
+            # Verify cooccurrences structure is a dict with term counts
+            assert isinstance(related, dict)
 
     def test_identify_clusters(self):
         """Test cluster identification."""
