@@ -1,0 +1,12 @@
+# Development dependencies for Academic Research Toolkit
+-r requirements.txt
+
+# Testing
+pytest>=7.0.0
+pytest-cov>=4.0.0
+
+# Optional AI features
+anthropic>=0.18.0
+
+# Optional MCP features
+# fastmcp>=0.1.0
