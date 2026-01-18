@@ -6,13 +6,17 @@ and geographic distribution. Works with rule-based analysis by default,
 with optional AI-powered enhancement.
 """
 
+import logging
 import re
 from collections import Counter, defaultdict
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional, Set, TYPE_CHECKING
+from typing import Any, Dict, List, Optional, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from academic_research_toolkit.intelligence.assistant import ResearchAssistant
+
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -131,6 +135,7 @@ class GapDetector:
                 if match:
                     return int(match.group())
             except (ValueError, TypeError):
+                # If the year string is malformed, ignore it and fall back to None
                 pass
         return None
 
@@ -578,7 +583,9 @@ Focus on questions that are specific, novel, and researchable."""
 
             return ai_questions[:num_questions]
 
-        except Exception:
+        except Exception as e:
+            # Log the exception but continue with rule-based analysis
+            logger.warning(f"AI question generation failed: {e}")
             return []
 
     def generate_gap_report(

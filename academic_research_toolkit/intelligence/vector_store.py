@@ -5,11 +5,10 @@ Uses numpy for vector operations and supports multiple embedding providers.
 """
 
 import hashlib
-import json
 import pickle
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional, Tuple
+from typing import Any, Callable, Dict, List, Optional
 
 try:
     import numpy as np
@@ -81,7 +80,7 @@ class VectorStore:
 
     def _get_text_hash(self, text: str) -> str:
         """Generate a hash for text to use as cache key."""
-        return hashlib.md5(text.encode()).hexdigest()
+        return hashlib.sha256(text.encode("utf-8")).hexdigest()
 
     def _init_embedding_function(self) -> Callable:
         """Initialize the embedding function based on provider."""
@@ -163,19 +162,20 @@ class VectorStore:
         """Generate simple local embeddings using hash-based approach.
 
         This is a fallback for when no external API is available.
-        Uses a hash-based approach to ensure consistent dimensions.
+        Uses a deterministic hash-based approach to ensure consistent dimensions
+        across Python process restarts.
         """
         embeddings = []
 
         for text in texts:
-            # Use fixed-size vector with hash-based word placement
+            # Use fixed-size vector with deterministic hash-based word placement
             vec = np.zeros(self.LOCAL_EMBED_DIM)
 
             for word in text.lower().split():
                 word = ''.join(c for c in word if c.isalnum())
                 if word and len(word) >= 2:
-                    # Hash word to get consistent index
-                    word_hash = hash(word) % self.LOCAL_EMBED_DIM
+                    # Use SHA-256 for deterministic hashing across Python runs
+                    word_hash = int(hashlib.sha256(word.encode("utf-8")).hexdigest(), 16) % self.LOCAL_EMBED_DIM
                     vec[word_hash] += 1
 
             # Normalize
@@ -258,19 +258,19 @@ class VectorStore:
         for chunk_text in chunks:
             cache_key = self._get_text_hash(chunk_text)
             cache_keys.append(cache_key)
-            if cache_key not in self._embedding_cache:
+            if cache_key in self._embedding_cache:
+                self._token_usage["cached"] += 1
+            else:
                 texts_to_embed.append(chunk_text)
 
         # Get new embeddings
         if texts_to_embed:
             new_embeddings = embed_fn(texts_to_embed)
             embed_idx = 0
-            for i, cache_key in enumerate(cache_keys):
+            for cache_key in cache_keys:
                 if cache_key not in self._embedding_cache:
                     self._embedding_cache[cache_key] = new_embeddings[embed_idx]
                     embed_idx += 1
-                else:
-                    self._token_usage["cached"] += 1
 
         # Create documents
         for i, (chunk_text, cache_key) in enumerate(zip(chunks, cache_keys)):

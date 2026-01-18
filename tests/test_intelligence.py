@@ -1,10 +1,6 @@
 """Comprehensive tests for the intelligence module."""
 
-import json
-import pickle
-import tempfile
-from pathlib import Path
-from unittest.mock import MagicMock, patch, Mock
+from unittest.mock import MagicMock, patch
 
 import pytest
 
@@ -623,10 +619,13 @@ class TestGapDetectorMethodologicalGaps:
 
         gaps = detector.find_methodological_gaps(citations)
 
-        # Computational methodology should be used
-        comp_gap = next((g for g in gaps if g["methodology"] == "computational"), None)
-        # Either not a gap (it's used) or not present in gaps list
-        # This depends on threshold
+        # The methodology detection should work without errors
+        # Computational methodology is present in the text, so it's being used
+        assert isinstance(gaps, list)
+        # If computational methodology is in the gaps, check it has valid fields
+        for gap in gaps:
+            assert "methodology" in gap
+            assert "severity" in gap
 
 
 class TestGapDetectorGeographicGaps:
