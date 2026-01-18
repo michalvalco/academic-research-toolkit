@@ -17,6 +17,10 @@ Commands:
     graph     Build knowledge graph or citation network
     dashboard Generate interactive visualization dashboard
     process   Run full pipeline on a directory
+    search    Semantic search over indexed documents
+    ask       Ask research questions using AI
+    summarize Summarize papers using AI
+    gaps      Detect research gaps in citations
 """
 
 import argparse
@@ -591,6 +595,343 @@ def cmd_process(args):
     return 0
 
 
+def cmd_search(args):
+    """Handle semantic search command."""
+    import json
+
+    index_path = Path(args.index)
+
+    if not index_path.exists():
+        print(f"Error: Index file not found: {index_path}")
+        return 1
+
+    try:
+        from academic_research_toolkit.intelligence.vector_store import VectorStore
+    except ImportError as e:
+        print(f"Error: Intelligence module not available. Install with: pip install academic-research-toolkit[intelligence]")
+        print(f"  Details: {e}")
+        return 1
+
+    print(f"Loading vector index from: {index_path}")
+    store = VectorStore()
+    store.load(index_path)
+
+    print(f"  Documents indexed: {len(store.documents)}")
+    print(f"  Searching for: {args.query}")
+
+    results = store.search(args.query, top_k=args.top)
+
+    if not results:
+        print("\nNo results found.")
+        return 0
+
+    print(f"\n{'─'*60}")
+    print(f"Top {len(results)} Results:")
+    print(f"{'─'*60}")
+
+    for i, result in enumerate(results, 1):
+        print(f"\n{i}. Score: {result['score']:.4f}")
+        metadata = result.get("metadata", {})
+        if metadata.get("title"):
+            print(f"   Title: {metadata['title']}")
+        if metadata.get("authors"):
+            authors = metadata["authors"]
+            if isinstance(authors, list):
+                print(f"   Authors: {', '.join(authors)}")
+            else:
+                print(f"   Authors: {authors}")
+        if metadata.get("year"):
+            print(f"   Year: {metadata['year']}")
+
+        # Show text snippet
+        text = result.get("text", "")
+        snippet = text[:200] + "..." if len(text) > 200 else text
+        print(f"   Snippet: {snippet}")
+
+    # Output to file if specified
+    if args.output:
+        output_path = Path(args.output)
+        with open(output_path, "w", encoding="utf-8") as f:
+            json.dump(results, f, indent=2, ensure_ascii=False)
+        print(f"\nResults saved to: {output_path}")
+
+    return 0
+
+
+def cmd_ask(args):
+    """Handle AI question-answering command."""
+    import json
+
+    try:
+        from academic_research_toolkit.intelligence.assistant import ResearchAssistant
+        from academic_research_toolkit.intelligence.vector_store import VectorStore
+    except ImportError as e:
+        print(f"Error: Intelligence module not available. Install with: pip install academic-research-toolkit[ai,intelligence]")
+        print(f"  Details: {e}")
+        return 1
+
+    # Load context if provided
+    context = None
+    vector_store = None
+
+    if args.context:
+        context_path = Path(args.context)
+        if not context_path.exists():
+            print(f"Error: Context file not found: {context_path}")
+            return 1
+
+        with open(context_path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+
+        # Convert to context format
+        if isinstance(data, list):
+            context = [
+                {
+                    "text": c.get("raw_text") or c.get("title", ""),
+                    "metadata": c,
+                }
+                for c in data
+            ]
+        elif isinstance(data, dict) and "citations" in data:
+            context = [
+                {
+                    "text": c.get("raw_text") or c.get("title", ""),
+                    "metadata": c,
+                }
+                for c in data["citations"]
+            ]
+
+    if args.index:
+        index_path = Path(args.index)
+        if index_path.exists():
+            vector_store = VectorStore()
+            vector_store.load(index_path)
+            print(f"Loaded vector index: {len(vector_store.documents)} documents")
+
+    # Create assistant
+    assistant = ResearchAssistant(
+        vector_store=vector_store,
+        dry_run=args.dry_run,
+    )
+
+    print(f"\nQuestion: {args.question}")
+    print(f"{'─'*60}")
+
+    try:
+        answer = assistant.ask(
+            args.question,
+            context=context,
+            use_rag=not args.no_rag,
+        )
+        print(f"\nAnswer:\n{answer}")
+
+        # Show token usage
+        usage = assistant.get_token_usage()
+        if usage["input_tokens"] > 0 or usage["output_tokens"] > 0:
+            print(f"\nToken usage: {usage['input_tokens']} input, {usage['output_tokens']} output")
+
+    except Exception as e:
+        print(f"Error: {e}")
+        return 1
+
+    return 0
+
+
+def cmd_summarize(args):
+    """Handle paper summarization command."""
+    import json
+
+    input_path = Path(args.input)
+
+    if not input_path.exists():
+        print(f"Error: Input file not found: {input_path}")
+        return 1
+
+    if input_path.suffix.lower() != ".json":
+        print(f"Error: Input must be a JSON file with citation data")
+        return 1
+
+    try:
+        from academic_research_toolkit.intelligence.assistant import ResearchAssistant
+    except ImportError as e:
+        print(f"Error: Intelligence module not available. Install with: pip install academic-research-toolkit[ai,intelligence]")
+        print(f"  Details: {e}")
+        return 1
+
+    # Load citations
+    with open(input_path, "r", encoding="utf-8") as f:
+        data = json.load(f)
+
+    if isinstance(data, dict) and "citations" in data:
+        citations = data["citations"]
+    elif isinstance(data, list):
+        citations = data
+    else:
+        print("Error: Invalid citation data format")
+        return 1
+
+    if not citations:
+        print("No citations found in input file")
+        return 1
+
+    print(f"Summarizing {len(citations)} papers...")
+
+    assistant = ResearchAssistant(dry_run=args.dry_run)
+
+    try:
+        summary = assistant.summarize_papers(
+            citations,
+            focus=args.focus,
+        )
+
+        print(f"\n{'='*60}")
+        print("SYNTHESIS SUMMARY")
+        print(f"{'='*60}\n")
+        print(summary)
+
+        # Save to file if specified
+        if args.output:
+            output_path = Path(args.output)
+            with open(output_path, "w", encoding="utf-8") as f:
+                f.write(f"# Synthesis Summary\n\n")
+                f.write(f"Generated from {len(citations)} papers\n\n")
+                if args.focus:
+                    f.write(f"Focus: {args.focus}\n\n")
+                f.write(f"---\n\n{summary}")
+            print(f"\nSummary saved to: {output_path}")
+
+        # Show token usage
+        usage = assistant.get_token_usage()
+        if usage["input_tokens"] > 0 or usage["output_tokens"] > 0:
+            print(f"\nToken usage: {usage['input_tokens']} input, {usage['output_tokens']} output")
+
+    except Exception as e:
+        print(f"Error: {e}")
+        return 1
+
+    return 0
+
+
+def cmd_gaps(args):
+    """Handle research gap detection command."""
+    import json
+
+    input_path = Path(args.input)
+
+    if not input_path.exists():
+        print(f"Error: Input file not found: {input_path}")
+        return 1
+
+    if input_path.suffix.lower() != ".json":
+        print(f"Error: Input must be a JSON file with citation data")
+        return 1
+
+    try:
+        from academic_research_toolkit.intelligence.gap_detector import GapDetector
+    except ImportError as e:
+        print(f"Error: Intelligence module not available.")
+        print(f"  Details: {e}")
+        return 1
+
+    # Load citations
+    with open(input_path, "r", encoding="utf-8") as f:
+        data = json.load(f)
+
+    if isinstance(data, dict) and "citations" in data:
+        citations = data["citations"]
+    elif isinstance(data, list):
+        citations = data
+    else:
+        print("Error: Invalid citation data format")
+        return 1
+
+    if not citations:
+        print("No citations found in input file")
+        return 1
+
+    # Load themes if provided
+    themes = None
+    if args.themes:
+        themes_path = Path(args.themes)
+        if themes_path.exists():
+            with open(themes_path, "r", encoding="utf-8") as f:
+                themes = json.load(f)
+
+    # Optional AI enhancement
+    assistant = None
+    if args.use_ai:
+        try:
+            from academic_research_toolkit.intelligence.assistant import ResearchAssistant
+            assistant = ResearchAssistant(dry_run=args.dry_run)
+        except ImportError:
+            print("Note: AI enhancement not available. Running rule-based analysis only.")
+
+    print(f"Analyzing {len(citations)} citations for research gaps...")
+
+    detector = GapDetector(assistant=assistant, use_ai=args.use_ai and assistant is not None)
+    report = detector.generate_gap_report(citations, themes)
+
+    # Print summary
+    summary = report["summary"]
+    print(f"\n{'='*60}")
+    print("RESEARCH GAP ANALYSIS")
+    print(f"{'='*60}")
+    print(f"\nTotal citations analyzed: {summary['total_citations']}")
+    print(f"Total gaps found: {summary['total_gaps_found']}")
+    print(f"  High severity: {summary['high_severity_gaps']}")
+    print(f"  Medium severity: {summary['medium_severity_gaps']}")
+
+    if summary["temporal_range"]["min_year"]:
+        print(f"\nTemporal range: {summary['temporal_range']['min_year']}-{summary['temporal_range']['max_year']}")
+
+    # Print temporal gaps
+    if report["temporal_gaps"]:
+        print(f"\n{'─'*60}")
+        print("Temporal Gaps:")
+        for gap in report["temporal_gaps"]:
+            print(f"  - {gap['start_year']}-{gap['end_year']}: {gap['total_publications']} papers ({gap['severity']} severity)")
+
+    # Print methodological gaps
+    if report["methodological_gaps"]:
+        print(f"\n{'─'*60}")
+        print("Methodological Gaps:")
+        for gap in report["methodological_gaps"]:
+            usage_pct = gap['current_usage'] * 100
+            print(f"  - {gap['methodology'].replace('_', ' ').title()}: {usage_pct:.1f}% ({gap['severity']} severity)")
+
+    # Print geographic gaps
+    if report["geographic_gaps"]:
+        print(f"\n{'─'*60}")
+        print("Geographic Gaps:")
+        for gap in report["geographic_gaps"]:
+            coverage_pct = gap['current_coverage'] * 100
+            print(f"  - {gap['region']}: {coverage_pct:.1f}% ({gap['severity']} severity)")
+
+    # Print recommendations
+    if report["recommendations"]:
+        print(f"\n{'─'*60}")
+        print("Recommendations:")
+        for i, rec in enumerate(report["recommendations"][:5], 1):
+            print(f"  {i}. {rec}")
+
+    # Print suggested research questions
+    if report["suggested_research_questions"]:
+        print(f"\n{'─'*60}")
+        print("Suggested Research Questions:")
+        for i, q in enumerate(report["suggested_research_questions"][:5], 1):
+            print(f"  {i}. {q['question']}")
+            print(f"     Rationale: {q['rationale']}")
+
+    # Save to file if specified
+    if args.output:
+        output_path = Path(args.output)
+        with open(output_path, "w", encoding="utf-8") as f:
+            json.dump(report, f, indent=2, ensure_ascii=False)
+        print(f"\nFull report saved to: {output_path}")
+
+    return 0
+
+
 def main():
     """Main entry point for the CLI."""
     parser = argparse.ArgumentParser(
@@ -609,6 +950,10 @@ Examples:
   research-toolkit graph -i citations.json -o network.json -t citation
   research-toolkit dashboard -i citations.json -o dashboard.html -t citation
   research-toolkit process -i ./papers -o ./results
+  research-toolkit search --query "machine learning healthcare" --index ./vectors.pkl
+  research-toolkit ask --question "What are the main findings?" --context citations.json
+  research-toolkit summarize --input citations.json --output summary.md
+  research-toolkit gaps --input citations.json --output gap_report.json
         """,
     )
 
@@ -735,6 +1080,48 @@ Examples:
     process_parser.add_argument("--input", "-i", required=True, help="Directory with PDFs")
     process_parser.add_argument("--output", "-o", required=True, help="Base output directory")
 
+    # Search command (semantic search)
+    search_parser = subparsers.add_parser(
+        "search",
+        help="Semantic search over indexed documents",
+    )
+    search_parser.add_argument("--query", "-q", required=True, help="Search query")
+    search_parser.add_argument("--index", "-x", required=True, help="Vector index file (.pkl)")
+    search_parser.add_argument("--top", "-t", type=int, default=5, help="Number of results (default: 5)")
+    search_parser.add_argument("--output", "-o", help="Output file for results (JSON)")
+
+    # Ask command (AI Q&A)
+    ask_parser = subparsers.add_parser(
+        "ask",
+        help="Ask research questions using AI",
+    )
+    ask_parser.add_argument("--question", "-q", required=True, help="Research question to ask")
+    ask_parser.add_argument("--context", "-c", help="Context file (citations JSON)")
+    ask_parser.add_argument("--index", "-x", help="Vector index file for RAG")
+    ask_parser.add_argument("--no-rag", action="store_true", help="Disable RAG (retrieval-augmented generation)")
+    ask_parser.add_argument("--dry-run", action="store_true", help="Don't make API calls (for testing)")
+
+    # Summarize command
+    summarize_parser = subparsers.add_parser(
+        "summarize",
+        help="Summarize papers using AI",
+    )
+    summarize_parser.add_argument("--input", "-i", required=True, help="Citations JSON file")
+    summarize_parser.add_argument("--output", "-o", help="Output file (markdown)")
+    summarize_parser.add_argument("--focus", "-f", help="Focus area for summary")
+    summarize_parser.add_argument("--dry-run", action="store_true", help="Don't make API calls (for testing)")
+
+    # Gaps command (research gap detection)
+    gaps_parser = subparsers.add_parser(
+        "gaps",
+        help="Detect research gaps in citations",
+    )
+    gaps_parser.add_argument("--input", "-i", required=True, help="Citations JSON file")
+    gaps_parser.add_argument("--themes", "-t", help="Themes JSON file (optional)")
+    gaps_parser.add_argument("--output", "-o", help="Output file for full report (JSON)")
+    gaps_parser.add_argument("--use-ai", action="store_true", help="Use AI for enhanced analysis")
+    gaps_parser.add_argument("--dry-run", action="store_true", help="Don't make API calls (for testing)")
+
     args = parser.parse_args()
 
     if not args.command:
@@ -753,6 +1140,10 @@ Examples:
             "graph": cmd_graph,
             "dashboard": cmd_dashboard,
             "process": cmd_process,
+            "search": cmd_search,
+            "ask": cmd_ask,
+            "summarize": cmd_summarize,
+            "gaps": cmd_gaps,
         }
 
         handler = command_handlers.get(args.command)

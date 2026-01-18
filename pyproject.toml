@@ -60,12 +60,16 @@ visualization = [
     "plotly>=5.0.0",
     "networkx>=3.0.0",
 ]
+intelligence = [
+    "numpy>=1.24.0",
+    "tiktoken>=0.5.0",
+]
 dev = [
     "pytest>=7.0.0",
     "pytest-cov>=4.0.0",
 ]
 all = [
-    "academic-research-toolkit[ai,mcp,api,enrichment,visualization,dev]",
+    "academic-research-toolkit[ai,mcp,api,enrichment,visualization,intelligence,dev]",
 ]
 
 [project.scripts]

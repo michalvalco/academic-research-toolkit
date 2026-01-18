@@ -40,6 +40,15 @@ def __getattr__(name):
     elif name == "CrossRefEnricher":
         from academic_research_toolkit.enrichment.crossref import CrossRefEnricher
         return CrossRefEnricher
+    elif name == "VectorStore":
+        from academic_research_toolkit.intelligence.vector_store import VectorStore
+        return VectorStore
+    elif name == "ResearchAssistant":
+        from academic_research_toolkit.intelligence.assistant import ResearchAssistant
+        return ResearchAssistant
+    elif name == "GapDetector":
+        from academic_research_toolkit.intelligence.gap_detector import GapDetector
+        return GapDetector
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 
 
@@ -54,5 +63,8 @@ __all__ = [
     "BibTeXExporter",
     "RISExporter",
     "CrossRefEnricher",
+    "VectorStore",
+    "ResearchAssistant",
+    "GapDetector",
     "__version__",
 ]

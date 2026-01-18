@@ -24,6 +24,7 @@ from academic_research_toolkit.api.models import (
 from academic_research_toolkit.api.routes import (
     citations_router,
     export_router,
+    intelligence_router,
     pdf_router,
     themes_router,
     visualization_router,
@@ -44,6 +45,7 @@ app.include_router(citations_router)
 app.include_router(themes_router)
 app.include_router(export_router)
 app.include_router(visualization_router)
+app.include_router(intelligence_router)
 
 # In-memory job storage (use Redis or database in production)
 _jobs: Dict[str, Dict[str, Any]] = {}
