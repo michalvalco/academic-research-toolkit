@@ -6,7 +6,7 @@ Provides research Q&A, paper summarization, comparison, and topic suggestions.
 
 import json
 import logging
-from typing import Any, Dict, Generator, List, Optional, TYPE_CHECKING
+from typing import Any, Dict, Generator, List, Optional, Union, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from academic_research_toolkit.intelligence.vector_store import VectorStore
@@ -213,7 +213,7 @@ When summarizing papers:
         use_rag: bool = True,
         top_k: int = 5,
         stream: bool = False,
-    ) -> str | Generator[str, None, None]:
+    ) -> Union[str, Generator[str, None, None]]:
         """Answer a research question using available context.
 
         Args:

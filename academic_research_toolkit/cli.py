@@ -613,7 +613,7 @@ def cmd_search(args):
         return 1
 
     print(f"Loading vector index from: {index_path}")
-    store = VectorStore()
+    store = VectorStore(embedding_provider="local")  # Provider will be restored from saved data
     store.load(index_path)
 
     print(f"  Documents indexed: {len(store.documents)}")
@@ -704,7 +704,7 @@ def cmd_ask(args):
     if args.index:
         index_path = Path(args.index)
         if index_path.exists():
-            vector_store = VectorStore()
+            vector_store = VectorStore(embedding_provider="local")  # Provider will be restored from saved data
             vector_store.load(index_path)
             print(f"Loaded vector index: {len(vector_store.documents)} documents")
 
